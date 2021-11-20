@@ -1,3 +1,9 @@
+# Update
+
+Periodically update the list of providers by running
+
+    ./update_providers.sh
+
 # Burnex
 
 <!--MDOC !-->
