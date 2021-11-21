@@ -1,18 +1,20 @@
 defmodule Burnex do
+  use Memoize
+
   @external_resource readme = "README.md"
   @moduledoc readme
              |> File.read!()
              |> String.split("<!--MDOC !-->")
              |> Enum.fetch!(1)
 
-  @external_resource emails = "priv/burner-email-providers/emails.txt"
-  @providers emails
-             |> File.read!()
-             |> String.split("\n")
-             |> Enum.filter(fn str -> str != "" end)
-             |> MapSet.new()
+  defmemo providers do
+    File.read!("priv/burner-email-providers/emails.txt")
+    |> String.split("\n")
+    |> Enum.filter(fn str -> str != "" end)
+    |> MapSet.new()
+  end
 
-  # @dialyzer {:nowarn_function, is_burner_domain?: 1}
+  @dialyzer {:nowarn_function, is_burner_domain?: 1}
 
   @doc """
   Check if email is a temporary / burner address.
@@ -56,7 +58,7 @@ defmodule Burnex do
   """
   @spec is_burner_domain?(binary()) :: boolean()
   def is_burner_domain?(domain) do
-    case MapSet.member?(@providers, domain) do
+    case MapSet.member?(providers(), domain) do
       false ->
         case Regex.run(~r/^[^.]+[.](.+)$/, domain) do
           [_ | [higher_domain]] ->
@@ -69,19 +71,6 @@ defmodule Burnex do
       true ->
         true
     end
-  end
-
-  @doc """
-  Returns a MapSet with all blocked domains providers.
-
-  ## Examples
-
-      iex> Burnex.providers()
-      #MapSet<["mysunrise.tech", "gmailom.co", "renwoying.org", "xn--c3cralk2a3ak7a5gghbv.com", "vevevevevery.ru", "ghork.live", "totobaksa.website", "wellnessmarketing.solutions", "zerograv.top", "votenoonnov6.com", "b45win.org", "dataleak01.site", "muslimahcollection.online", "barcntenef.ml", "lpi1iyi7m3zfb0i.gq", "ceco3kvloj5s3.tk", "outlettomsshoesstore.com", "kebabishcosladacoslada.com", "utoo.email", "pedia-egypt.org", "bestmemory.net", "8263813.com", "hz6m.com", "anocor.gq", "charltons.biz", "qvady.network", "2v3vjqapd6itot8g4z.gq", "yliora.site", "ectseep.site", "2m46.space", "godrejpropertiesforestgrove.com", "smart-thailand.com", "takebacktheregent.com", "dozarb.online", "mail22.space", "ttsbcq.us", "clubhowse.com", "gayflorida.net", "specialsshorts.info", "dubainaturalsoap.com", "carolynlove.website", "jlqiqd.tokyo", "kulitlumpia8.cf", "adastralflying.com", "superstachel.de", "diyarbakirengelliler.xyz", "notatempmail.info", "directproductinvesting.com", "francisxkelly.com", "saclouisvuittonboutiquefrance.com", ...]>
-
-  """
-  def providers do
-    @providers
   end
 
   defp bad_mx_server_domains(mx_resolution) do
