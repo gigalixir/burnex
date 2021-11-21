@@ -8,7 +8,8 @@ defmodule Burnex do
              |> Enum.fetch!(1)
 
   defmemo providers do
-    File.read!("priv/burner-email-providers/emails.txt")
+    Application.app_dir(:burnex, "priv/burner-email-providers/emails.txt")
+    |> File.read!
     |> String.split("\n")
     |> Enum.filter(fn str -> str != "" end)
     |> MapSet.new()
