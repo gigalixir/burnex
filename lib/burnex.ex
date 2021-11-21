@@ -12,7 +12,7 @@ defmodule Burnex do
              |> Enum.filter(fn str -> str != "" end)
              |> MapSet.new()
 
-  @dialyzer {:nowarn_function, is_burner_domain?: 1}
+  # @dialyzer {:nowarn_function, is_burner_domain?: 1}
 
   @doc """
   Check if email is a temporary / burner address.
